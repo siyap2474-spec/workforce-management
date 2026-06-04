@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import User from "../models/User";
+import User, { IUser } from "../models/User";
 
 interface JwtPayload {
   id: string;
 }
 
+
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: IUser;
 }
 
 export const protect = async (
@@ -29,7 +30,9 @@ export const protect = async (
         process.env.JWT_SECRET as string
       ) as JwtPayload;
 
-      req.user = await User.findById(decoded.id).select("-password");
+      req.user = await User.findById(decoded.id)
+        .populate("role")
+        .select("-password");
 
       next();
     } else {

@@ -1,14 +1,18 @@
-import mongoose, { Document } from "mongoose";
+import mongoose, { Document, Types } from "mongoose";
+
+import { IRole } from "./Role";
 
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  role: "Admin" | "Manager" | "Employee";
+  role: Types.ObjectId | IRole;
   department?: string;
   skills?: string[];
+  isVerified: boolean;
+  verificationToken?: string;
+  verificationTokenExpires?: Date;
 }
-
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -30,9 +34,9 @@ const userSchema = new mongoose.Schema(
     },
 
     role: {
-      type: String,
-      enum: ["Admin", "Manager", "Employee"],
-      default: "Employee",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      required: true,
     },
 
     department: {
@@ -43,6 +47,19 @@ const userSchema = new mongoose.Schema(
     skills: {
       type: [String],
       default: [],
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    verificationToken: {
+      type: String,
+    },
+
+    verificationTokenExpires: {
+      type: Date,
     },
   },
   {
