@@ -9,9 +9,15 @@ export interface IUser extends Document {
   role: Types.ObjectId | IRole;
   department?: string;
   skills?: string[];
+
   isVerified: boolean;
   verificationToken?: string;
   verificationTokenExpires?: Date;
+
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+
+  refreshToken?: string;
 }
 const userSchema = new mongoose.Schema(
   {
@@ -61,6 +67,18 @@ const userSchema = new mongoose.Schema(
     verificationTokenExpires: {
       type: Date,
     },
+
+    resetPasswordToken: {
+      type: String,
+    },
+
+    resetPasswordExpires: {
+      type: Date,
+    },
+
+    refreshToken: {
+  type: String,
+},
   },
   {
     timestamps: true,
