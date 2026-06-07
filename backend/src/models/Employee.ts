@@ -6,6 +6,8 @@ export interface IEmployee extends Document {
   phone: string;
   department: string;
   skills: string[];
+    isOnLeave: boolean;
+
 }
 
 const employeeSchema = new mongoose.Schema(
@@ -37,6 +39,11 @@ const employeeSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+
+    isOnLeave: {
+  type: Boolean,
+  default: false,
+},
   },
   {
     timestamps: true,

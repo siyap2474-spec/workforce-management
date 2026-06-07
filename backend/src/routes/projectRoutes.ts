@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { createProject, updateProject }
+import { createProject, updateProject, closeProject, getAssignedResources}
 from "../controllers/projectController";
 
 import { protect }
@@ -31,5 +31,21 @@ router.put(
   updateProject
 );
 
-//
+//close project
+router.patch(
+  "/:id/close",
+  protect,
+  authorizePermission(
+    "UPDATE_PROJECT"
+  ),
+  closeProject
+);
+
+//assigned resources
+router.get(
+  "/:id/resources",
+  protect,
+  getAssignedResources
+);
+
 export default router;

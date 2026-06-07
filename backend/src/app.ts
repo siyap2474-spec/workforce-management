@@ -8,6 +8,8 @@ import employeeRoutes from "./routes/employeeRoutes";
 
 import projectRoutes from "./routes/projectRoutes";
 
+import allocationRoutes from "./routes/allocationRoutes";
+
 const app = express();
 
 app.use(cors());
@@ -24,5 +26,7 @@ app.use("/api/employees", employeeRoutes);
 app.use("/api/test", testRoutes);
 
 app.use( "/api/projects",projectRoutes);
+
+app.use( "/api/allocations", allocationRoutes);
 
 export default app;
