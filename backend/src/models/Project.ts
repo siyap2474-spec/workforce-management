@@ -10,6 +10,9 @@ export interface IProject extends Document {
   endDate: Date;
   status: string;
   assignedEmployees: Types.ObjectId[];
+
+  isCriticalProject: boolean;
+
 }
 
 const projectSchema = new mongoose.Schema(
@@ -40,6 +43,12 @@ const projectSchema = new mongoose.Schema(
       enum: ["Active", "Closed"],
       default: "Active",
     },
+
+    isCriticalProject: {
+      type: Boolean,
+      default: false,
+    },
+
 
     assignedEmployees: [
       {

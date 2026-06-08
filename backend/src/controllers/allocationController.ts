@@ -4,7 +4,6 @@ import Employee from "../models/Employee";
 import Project from "../models/Project";
 
 //create allocation
-
 export const allocateEmployee =
   async (
     req: Request,
@@ -25,6 +24,14 @@ export const allocateEmployee =
           employeeId
         );
 
+              if (!employee) {
+        res.status(404).json({
+          message:
+            "Employee not found",
+        });
+        return;
+      }
+
 //business logic employee on leave validation
 
 if (employee?.isOnLeave) {
@@ -36,13 +43,33 @@ if (employee?.isOnLeave) {
   return;
 }
 
-      if (!employee) {
-        res.status(404).json({
-          message:
-            "Employee not found",
-        });
-        return;
-      }
+//existing Allocation
+const existingAllocations =
+  await Allocation.find({
+    employee: employeeId,
+    status: "Active",
+  });
+
+const currentAllocation =
+  existingAllocations.reduce(
+    (total, allocation) =>
+      total +
+      allocation.allocationPercentage,
+    0
+  );
+
+if (
+  currentAllocation +
+    allocationPercentage >
+  100
+) {
+  res.status(400).json({
+    message:
+      "Total allocation cannot exceed 100%",
+  });
+
+  return;
+}
 
       const project =
         await Project.findById(
@@ -72,6 +99,7 @@ if (
   return;
 }
 
+//create allocation
       const allocation =
         await Allocation.create({
           employee: employeeId,
@@ -83,6 +111,157 @@ if (
 
       res.status(201).json(
         allocation
+      );
+
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).json({
+        message: "Server Error",
+      });
+    }
+  };
+
+  //update allocation
+ export const updateAllocation =
+  async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const allocation =
+        await Allocation.findById(
+          req.params.id
+        );
+
+      if (!allocation) {
+        res.status(404).json({
+          message:
+            "Allocation not found",
+        });
+
+        return;
+      }
+
+      const {
+        allocationPercentage,
+      } = req.body;
+
+      const employeeId =
+        allocation.employee;
+
+      const otherAllocations =
+        await Allocation.find({
+          employee: employeeId,
+          status: "Active",
+          _id: {
+            $ne: allocation._id,
+          },
+        });
+
+      const currentTotal =
+        otherAllocations.reduce(
+          (total, allocation) =>
+            total +
+            allocation.allocationPercentage,
+          0
+        );
+
+      if (
+        currentTotal +
+          allocationPercentage >
+        100
+      ) {
+        res.status(400).json({
+          message:
+            "Total allocation cannot exceed 100%",
+        });
+
+        return;
+      }
+
+      allocation.allocationPercentage =
+        allocationPercentage;
+
+      await allocation.save();
+
+      res.status(200).json(
+        allocation
+      );
+
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).json({
+        message: "Server Error",
+      });
+    }
+  };
+
+  //cancel Allocation
+  export const cancelAllocation =
+  async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const allocation =
+        await Allocation.findById(
+          req.params.id
+        );
+
+      if (!allocation) {
+        res.status(404).json({
+          message:
+            "Allocation not found",
+        });
+
+        return;
+      }
+
+      allocation.status =
+        "Cancelled";
+
+      await allocation.save();
+
+      res.status(200).json({
+        message:
+          "Allocation cancelled successfully",
+        allocation,
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      res.status(500).json({
+        message: "Server Error",
+      });
+    }
+  };
+
+  //get allocation history
+  export const getAllocationHistory =
+  async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+
+      const allocations =
+        await Allocation.find({
+          employee:
+            req.params.employeeId,
+        })
+          .populate(
+            "project",
+            "name"
+          )
+          .sort({
+            createdAt: -1,
+          });
+
+      res.status(200).json(
+        allocations
       );
 
     } catch (error) {

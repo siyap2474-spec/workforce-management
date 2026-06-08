@@ -6,10 +6,12 @@ export interface IEmployee extends Document {
   phone: string;
   department: string;
   skills: string[];
-    isOnLeave: boolean;
+  isOnLeave: boolean;
 
+  casualLeaveBalance: number;
+  sickLeaveBalance: number;
+  earnedLeaveBalance: number;
 }
-
 const employeeSchema = new mongoose.Schema(
   {
     name: {
@@ -41,9 +43,24 @@ const employeeSchema = new mongoose.Schema(
     },
 
     isOnLeave: {
-  type: Boolean,
-  default: false,
-},
+      type: Boolean,
+      default: false,
+    },
+
+    casualLeaveBalance: {
+      type: Number,
+      default: 12,
+    },
+
+    sickLeaveBalance: {
+      type: Number,
+      default: 8,
+    },
+
+    earnedLeaveBalance: {
+      type: Number,
+      default: 15,
+    },
   },
   {
     timestamps: true,

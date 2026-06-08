@@ -8,11 +8,15 @@ from "../middleware/permissionMiddleware";
 
 import {
   allocateEmployee,
+  updateAllocation,
+  cancelAllocation,
+  getAllocationHistory,
 }
 from "../controllers/allocationController";
 
 const router = Router();
 
+//allocate employee
 router.post(
   "/",
   protect,
@@ -20,6 +24,27 @@ router.post(
     "CREATE_PROJECT"
   ),
   allocateEmployee
+);
+
+//update allocation
+router.put(
+  "/:id",
+  protect,
+  updateAllocation
+);
+
+//cancel allocation
+router.put(
+  "/:id/cancel",
+  protect,
+  cancelAllocation
+);
+
+//get allocation history
+router.get(
+  "/employee/:employeeId",
+  protect,
+  getAllocationHistory
 );
 
 export default router;

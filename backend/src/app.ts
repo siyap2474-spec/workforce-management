@@ -10,6 +10,8 @@ import projectRoutes from "./routes/projectRoutes";
 
 import allocationRoutes from "./routes/allocationRoutes";
 
+import leaveRoutes from "./routes/leaveRoutes";
+
 const app = express();
 
 app.use(cors());
@@ -28,5 +30,7 @@ app.use("/api/test", testRoutes);
 app.use( "/api/projects",projectRoutes);
 
 app.use( "/api/allocations", allocationRoutes);
+
+app.use("/api/leaves",leaveRoutes);
 
 export default app;
