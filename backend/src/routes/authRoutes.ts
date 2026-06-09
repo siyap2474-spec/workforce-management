@@ -9,6 +9,8 @@ import {
   logoutUser,
 } from "../controllers/authController";
 
+import { protect } from "../middleware/authMiddleware";
+
 const router = Router();
 
 router.post("/register", registerUser);
@@ -23,6 +25,10 @@ router.post("/reset-password/:token", resetPassword);
 
 router.post("/refresh-token",refreshAccessToken);
 
-router.post("/logout", logoutUser);
+router.post(
+  "/logout",
+  protect,
+  logoutUser
+);
 
 export default router;

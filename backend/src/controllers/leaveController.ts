@@ -312,3 +312,42 @@ export const rejectLeave =
         }
     };
 
+//Leave controller
+// Leave Calendar
+
+export const getLeaveCalendar =
+    async (
+        req: Request,
+        res: Response
+    ): Promise<void> => {
+
+    try {
+
+        const leaves =
+            await Leave.find({
+                status: "Approved",
+            })
+            .populate(
+                "employee",
+                "name email"
+            )
+            .sort({
+                startDate: 1,
+            });
+
+
+        res.status(200).json(
+            leaves
+        );
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            message:
+                "Server Error",
+        });
+    }
+};

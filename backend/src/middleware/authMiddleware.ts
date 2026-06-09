@@ -34,6 +34,17 @@ export const protect = async (
         .populate("role")
         .select("-password");
 
+
+      if (!req.user) {
+
+        res.status(401).json({
+          message: "User not found"
+        });
+
+        return;
+      }
+
+
       next();
     } else {
       res.status(401).json({

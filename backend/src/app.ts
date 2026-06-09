@@ -12,6 +12,8 @@ import allocationRoutes from "./routes/allocationRoutes";
 
 import leaveRoutes from "./routes/leaveRoutes";
 
+import timesheetRoutes from "./routes/timesheetRoutes";
+
 const app = express();
 
 app.use(cors());
@@ -32,5 +34,7 @@ app.use( "/api/projects",projectRoutes);
 app.use( "/api/allocations", allocationRoutes);
 
 app.use("/api/leaves",leaveRoutes);
+
+app.use("/api/timesheets", timesheetRoutes);
 
 export default app;

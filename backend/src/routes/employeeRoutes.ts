@@ -22,6 +22,9 @@ router.post(
 router.get(
   "/",
   protect,
+  authorizePermission(
+    "VIEW_EMPLOYEE"
+  ),
   getEmployees
 );
 
@@ -29,6 +32,9 @@ router.get(
 router.get(
   "/:id",
   protect,
+  authorizePermission(
+    "VIEW_EMPLOYEE"
+  ),
   getEmployeeById
 );
 

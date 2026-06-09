@@ -45,6 +45,9 @@ router.patch(
 router.get(
   "/:id/resources",
   protect,
+  authorizePermission(
+    "VIEW_ASSIGNED_RESOURCES"
+  ),
   getAssignedResources
 );
 

@@ -4,13 +4,15 @@ import Role from "../models/Role";
 
 dotenv.config();
 
+
 const seedRoles = async () => {
+
   try {
+
     await connectDB();
 
-    await Role.deleteMany();
 
-    await Role.insertMany([
+    const roles = [
       {
         name: "Admin",
         description: "System Administrator",
@@ -22,9 +24,10 @@ const seedRoles = async () => {
           "UPDATE_PROJECT",
           "DELETE_PROJECT",
           "MANAGE_ROLES",
-          "VIEW_REPORTS",
+          "VIEW_REPORTS"
         ],
       },
+
 
       {
         name: "Manager",
@@ -35,28 +38,63 @@ const seedRoles = async () => {
           "APPROVE_LEAVE",
           "REVIEW_TIMESHEET",
           "VIEW_REPORTS",
+          "VIEW_ASSIGNED_RESOURCES"
         ],
       },
+
 
       {
         name: "Employee",
         description: "Employee User",
         permissions: [
+          "VIEW_EMPLOYEE",
           "APPLY_LEAVE",
           "SUBMIT_TIMESHEET",
-          "UPDATE_PROFILE",
+          "UPDATE_PROFILE"
         ],
-      },
-    ]);
+      }
 
-    console.log("Roles Seeded Successfully");
+    ];
+
+
+
+    for (const role of roles) {
+
+      await Role.findOneAndUpdate(
+
+        {
+          name: role.name
+        },
+
+        role,
+
+        {
+          returnDocument: "after",
+          upsert: true
+        }
+
+      );
+
+    }
+
+
+    console.log(
+      "Roles updated successfully"
+    );
+
 
     process.exit(0);
+
+
   } catch (error) {
+
     console.error(error);
 
     process.exit(1);
+
   }
+
 };
+
 
 seedRoles();

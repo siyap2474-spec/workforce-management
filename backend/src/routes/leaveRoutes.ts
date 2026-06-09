@@ -1,6 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware";
-import { applyLeave, getAllLeaves, approveLeave, rejectLeave} from "../controllers/leaveController";
+import { applyLeave, getAllLeaves, approveLeave, rejectLeave, getLeaveCalendar} from "../controllers/leaveController";
 
 const router =
   express.Router();
@@ -33,6 +33,11 @@ router.put(
   rejectLeave
 );
 
+//Leave Calender
+router.get(
+    "/calendar",
+    getLeaveCalendar
+);
 
 
 export default router;
