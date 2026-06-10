@@ -1,43 +1,92 @@
 import express from "express";
-import { protect } from "../middleware/authMiddleware";
-import { applyLeave, getAllLeaves, approveLeave, rejectLeave, getLeaveCalendar} from "../controllers/leaveController";
 
-const router =
-  express.Router();
+console.log("LEAVE ROUTE FILE LOADED");
 
-//apply leave
+import {
+  applyLeave,
+  getAllLeaves,
+  approveLeave,
+  rejectLeave,
+  getLeaveCalendar,
+  getLeaveBalance
+} from "../controllers/leaveController";
+
+
+import { protect }
+from "../middleware/authMiddleware";
+
+
+import { authorizePermission }
+from "../middleware/permissionMiddleware";
+
+
+const router = express.Router();
+
+
+// Employee apply leave
 router.post(
   "/",
   protect,
+  authorizePermission(
+    "APPLY_LEAVE"
+  ),
   applyLeave
 );
 
-//get all leave
+
+// Admin/Manager view leaves
 router.get(
   "/",
   protect,
+  authorizePermission(
+    "VIEW_LEAVES"
+  ),
   getAllLeaves
 );
 
-//Approve Leave
+
+// Manager approve
 router.put(
   "/:id/approve",
   protect,
+  authorizePermission(
+    "APPROVE_LEAVE"
+  ),
   approveLeave
 );
 
-//Reject Leave
+
+// Manager reject
 router.put(
   "/:id/reject",
   protect,
+  authorizePermission(
+    "REJECT_LEAVE"
+  ),
   rejectLeave
 );
 
-//Leave Calender
+
+// Calendar
 router.get(
-    "/calendar",
-    getLeaveCalendar
+  "/calendar",
+  protect,
+  authorizePermission(
+    "VIEW_LEAVE_CALENDAR"
+  ),
+  getLeaveCalendar
 );
+
+
+// Leave Balance
+router.get(
+  "/balance/:employeeId",
+  protect,
+  authorizePermission("VIEW_EMPLOYEE"),
+  getLeaveBalance
+);
+
+
 
 
 export default router;

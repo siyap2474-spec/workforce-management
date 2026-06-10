@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
     createTimesheet,
     getMyTimesheets,
@@ -11,56 +12,103 @@ import {
 } from "../controllers/timesheetController";
 
 
-const router =
-express.Router();
+import { protect }
+from "../middleware/authMiddleware";
 
 
+import { authorizePermission }
+from "../middleware/permissionMiddleware";
+
+
+const router = express.Router();
+
+
+// Employee create timesheet
 router.post(
     "/",
+    protect,
+    authorizePermission(
+        "SUBMIT_TIMESHEET"
+    ),
     createTimesheet
 );
 
 
+// Employee view own timesheets
 router.get(
     "/employee/:employeeId",
+    protect,
+    authorizePermission(
+        "SUBMIT_TIMESHEET"
+    ),
     getMyTimesheets
 );
 
 
+// Submit timesheet
 router.put(
     "/:id/submit",
+    protect,
+    authorizePermission(
+        "SUBMIT_TIMESHEET"
+    ),
     submitTimesheet
 );
 
 
+// Manager approve
 router.put(
     "/:id/approve",
+    protect,
+    authorizePermission(
+        "REVIEW_TIMESHEET"
+    ),
     approveTimesheet
 );
 
 
+// Manager reject
 router.put(
     "/:id/reject",
+    protect,
+    authorizePermission(
+        "REVIEW_TIMESHEET"
+    ),
     rejectTimesheet
 );
 
 
-// Weekly Timesheet
+// Weekly
 router.get(
     "/weekly/:employeeId",
+    protect,
+    authorizePermission(
+        "SUBMIT_TIMESHEET"
+    ),
     getWeeklyTimesheets
 );
 
-// Monthly Timesheet
+
+// Monthly
 router.get(
     "/monthly/:employeeId",
+    protect,
+    authorizePermission(
+        "SUBMIT_TIMESHEET"
+    ),
     getMonthlyTimesheets
 );
-export default router;
 
 
-//get pending timesheets for manager
+// Pending for manager
 router.get(
-"/pending",
-getPendingTimesheets
+    "/pending",
+    protect,
+    authorizePermission(
+        "REVIEW_TIMESHEET"
+    ),
+    getPendingTimesheets
 );
+
+
+export default router;

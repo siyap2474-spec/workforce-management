@@ -20,21 +20,39 @@ export const allocateEmployee =
       } = req.body;
 
       const employee =
-        await Employee.findById(
-          employeeId
-        );
+  await Employee.findById(
+    employeeId
+  );
 
-              if (!employee) {
-        res.status(404).json({
-          message:
-            "Employee not found",
-        });
-        return;
-      }
+if (!employee) {
+  res.status(404).json({
+    message:
+      "Employee not found",
+  });
 
-//business logic employee on leave validation
+  return;
+}
 
-if (employee?.isOnLeave) {
+
+// Auto reset leave status after leave end date
+
+if (
+  employee.isOnLeave &&
+  employee.leaveEndDate &&
+  new Date() > employee.leaveEndDate
+) {
+
+  employee.isOnLeave = false;
+  employee.leaveEndDate = undefined;
+
+  await employee.save();
+}
+
+
+// Check current leave status
+
+if (employee.isOnLeave) {
+
   res.status(400).json({
     message:
       "Employee is currently on leave",
@@ -247,15 +265,13 @@ if (
   ): Promise<void> => {
     try {
 
-      const allocations =
-        await Allocation.find({
-          employee:
-            req.params.employeeId,
-        })
-          .populate(
-            "project",
-            "name"
-          )
+    const allocations =
+ await Allocation.find({
+   employee: req.params.employeeId,
+ })
+ .populate(
+   "project"
+ )
           .sort({
             createdAt: -1,
           });

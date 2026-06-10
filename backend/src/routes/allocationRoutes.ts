@@ -1,11 +1,5 @@
 import { Router } from "express";
 
-import { protect }
-from "../middleware/authMiddleware";
-
-import { authorizePermission }
-from "../middleware/permissionMiddleware";
-
 import {
   allocateEmployee,
   updateAllocation,
@@ -14,37 +8,58 @@ import {
 }
 from "../controllers/allocationController";
 
+import { protect }
+from "../middleware/authMiddleware";
+
+import { authorizePermission }
+from "../middleware/permissionMiddleware";
+
+
 const router = Router();
 
-//allocate employee
+
+//create allocation
 router.post(
   "/",
   protect,
   authorizePermission(
-    "CREATE_PROJECT"
+    "CREATE_ALLOCATION"
   ),
   allocateEmployee
 );
+
 
 //update allocation
 router.put(
   "/:id",
   protect,
+  authorizePermission(
+    "UPDATE_ALLOCATION"
+  ),
   updateAllocation
 );
+
 
 //cancel allocation
 router.put(
   "/:id/cancel",
   protect,
+  authorizePermission(
+    "CANCEL_ALLOCATION"
+  ),
   cancelAllocation
 );
 
-//get allocation history
+
+//history
 router.get(
   "/employee/:employeeId",
   protect,
+  authorizePermission(
+    "VIEW_ALLOCATION_HISTORY"
+  ),
   getAllocationHistory
 );
+
 
 export default router;

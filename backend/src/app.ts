@@ -14,6 +14,12 @@ import leaveRoutes from "./routes/leaveRoutes";
 
 import timesheetRoutes from "./routes/timesheetRoutes";
 
+import availabilityRoutes from "./routes/availabilityRoutes";
+
+import reportRoutes from "./routes/reportRoutes";
+
+import dashboardRoutes from "./routes/dashboardRoutes";
+
 const app = express();
 
 app.use(cors());
@@ -36,5 +42,13 @@ app.use( "/api/allocations", allocationRoutes);
 app.use("/api/leaves",leaveRoutes);
 
 app.use("/api/timesheets", timesheetRoutes);
+
+app.use("/api/leaves", leaveRoutes);
+
+app.use("/api/availability", availabilityRoutes);
+
+app.use("/api/reports",reportRoutes);
+
+app.use("/api/dashboard",dashboardRoutes);
 
 export default app;

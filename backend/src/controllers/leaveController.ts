@@ -240,6 +240,7 @@ export const approveLeave =
             leave.status = "Approved";
 
             employee.isOnLeave = true;
+            employee.leaveEndDate = leave.endDate;
 
             await leave.save();
             await employee.save();
@@ -312,42 +313,102 @@ export const rejectLeave =
         }
     };
 
-//Leave controller
 // Leave Calendar
-
 export const getLeaveCalendar =
     async (
         req: Request,
         res: Response
     ): Promise<void> => {
 
-    try {
+        try {
 
-        const leaves =
-            await Leave.find({
-                status: "Approved",
-            })
-            .populate(
-                "employee",
-                "name email"
-            )
-            .sort({
-                startDate: 1,
+            const leaves =
+                await Leave.find({
+                    status: "Approved",
+                })
+                    .populate(
+                        "employee",
+                        "name email"
+                    )
+                    .sort({
+                        startDate: 1,
+                    });
+
+
+            res.status(200).json(
+                leaves
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            res.status(500).json({
+                message:
+                    "Server Error",
+            });
+        }
+    };
+
+// Get Leave Balance
+export const getLeaveBalance =
+    async (
+        req: Request,
+        res: Response
+    ): Promise<void> => {
+
+        try {
+
+            const employee =
+                await Employee.findById(
+                    req.params.employeeId
+                );
+
+
+            if (!employee) {
+
+                res.status(404).json({
+                    message:
+                        "Employee not found",
+                });
+
+                return;
+            }
+
+
+            res.status(200).json({
+
+                employee:
+                    employee.name,
+
+                leaveBalance: {
+
+                    casualLeaveBalance:
+                        employee.casualLeaveBalance,
+
+                    sickLeaveBalance:
+                        employee.sickLeaveBalance,
+
+                    earnedLeaveBalance:
+                        employee.earnedLeaveBalance
+
+                }
+
             });
 
 
-        res.status(200).json(
-            leaves
-        );
+        } catch (error) {
+
+            console.error(error);
 
 
-    } catch (error) {
+            res.status(500).json({
+                message:
+                    "Server Error",
+            });
 
-        console.error(error);
+        }
 
-        res.status(500).json({
-            message:
-                "Server Error",
-        });
-    }
-};
+    };
+

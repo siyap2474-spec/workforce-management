@@ -16,8 +16,13 @@ export const authorizePermission =
     }
 
     const role = req.user.role as IRole;
-    console.log(req.user);
 
+console.log(
+  "USER:",
+  req.user.email,
+  "ROLE:",
+  role?.name
+);
     const hasPermission = permissions.some(
       (permission) =>
         role.permissions.includes(permission)
