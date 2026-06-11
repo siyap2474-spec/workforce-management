@@ -25,6 +25,7 @@ const seedRoles = async () => {
           "CREATE_EMPLOYEE",
           "UPDATE_EMPLOYEE",
           "DELETE_EMPLOYEE",
+          "VIEW_EMPLOYEE",
 
 
           // Project Management
@@ -47,6 +48,10 @@ const seedRoles = async () => {
           "VIEW_LEAVE_CALENDAR",
 
 
+          // Timesheet
+          "REVIEW_TIMESHEET",
+
+
           // System
           "MANAGE_ROLES",
           "VIEW_REPORTS"
@@ -63,6 +68,9 @@ const seedRoles = async () => {
 
         permissions: [
 
+
+          // Employee Management
+          "VIEW_EMPLOYEE",
 
           // Allocation Management
           "CREATE_ALLOCATION",

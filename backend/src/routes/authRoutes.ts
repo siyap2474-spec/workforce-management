@@ -7,11 +7,14 @@ import {
   resetPassword,
   refreshAccessToken,
   logoutUser,
+  getRoles,
 } from "../controllers/authController";
 
 import { protect } from "../middleware/authMiddleware";
 
 const router = Router();
+
+router.get("/roles", getRoles);
 
 router.post("/register", registerUser);
 

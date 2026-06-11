@@ -81,7 +81,7 @@ export const registerUser = async (
     }
 
     const verificationUrl =
-      `http://localhost:5000/api/auth/verify-email/${verificationToken}`;
+      `http://localhost:5173/verify-email/${verificationToken}`;
 
     await sendEmail(
       user.email,
@@ -103,7 +103,7 @@ export const registerUser = async (
       name: populatedUser?.name,
       email: populatedUser?.email,
       role: populatedUser?.role,
-      token: generateToken(user._id.toString()),
+      message: "Registration successful. Please check your email to verify your account.",
     });
   } catch (error) {
     console.error(error);
@@ -393,6 +393,22 @@ export const logoutUser = async (
     });
 
   } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};
+
+// get all roles
+export const getRoles = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const roles = await Role.find({});
+    res.status(200).json(roles);
+  } catch (error) {
+    console.error(error);
     res.status(500).json({
       message: "Server Error",
     });

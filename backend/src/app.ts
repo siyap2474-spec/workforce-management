@@ -43,8 +43,6 @@ app.use("/api/leaves",leaveRoutes);
 
 app.use("/api/timesheets", timesheetRoutes);
 
-app.use("/api/leaves", leaveRoutes);
-
 app.use("/api/availability", availabilityRoutes);
 
 app.use("/api/reports",reportRoutes);

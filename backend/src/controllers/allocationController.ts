@@ -127,6 +127,10 @@ if (
           endDate,
         });
 
+      // Synchronize Project assignedEmployees array
+      project.assignedEmployees.push(employeeId);
+      await project.save();
+
       res.status(201).json(
         allocation
       );
@@ -242,6 +246,15 @@ if (
 
       await allocation.save();
 
+      // Synchronize Project assignedEmployees array
+      const project = await Project.findById(allocation.project);
+      if (project) {
+        project.assignedEmployees = project.assignedEmployees.filter(
+          (id) => id.toString() !== allocation.employee.toString()
+        );
+        await project.save();
+      }
+
       res.status(200).json({
         message:
           "Allocation cancelled successfully",
@@ -288,3 +301,29 @@ if (
       });
     }
   };
+
+// get all allocations
+export const getAllocations = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { status } = req.query;
+    let query: any = {};
+
+    if (status) {
+      query.status = status as string;
+    }
+
+    const allocations = await Allocation.find(query)
+      .populate("employee")
+      .populate("project");
+
+    res.status(200).json(allocations);
+  } catch (error) {
+    console.error("GET ALLOCATIONS ERROR:", error);
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};

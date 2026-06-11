@@ -5,6 +5,7 @@ import {
   updateAllocation,
   cancelAllocation,
   getAllocationHistory,
+  getAllocations,
 }
 from "../controllers/allocationController";
 
@@ -16,6 +17,16 @@ from "../middleware/permissionMiddleware";
 
 
 const router = Router();
+
+//get all allocations
+router.get(
+  "/",
+  protect,
+  authorizePermission(
+    "VIEW_ALLOCATION_HISTORY"
+  ),
+  getAllocations
+);
 
 
 //create allocation

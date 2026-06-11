@@ -1,15 +1,33 @@
 import { Router } from "express";
 
-import { createProject, updateProject, closeProject, getAssignedResources}
-from "../controllers/projectController";
+import {
+  createProject,
+  updateProject,
+  closeProject,
+  getAssignedResources,
+  getProjects,
+  getProjectById,
+} from "../controllers/projectController";
 
-import { protect }
-from "../middleware/authMiddleware";
+import { protect } from "../middleware/authMiddleware";
 
-import { authorizePermission }
-from "../middleware/permissionMiddleware";
+import { authorizePermission } from "../middleware/permissionMiddleware";
 
 const router = Router();
+
+// get all projects
+router.get(
+  "/",
+  protect,
+  getProjects
+);
+
+// get project by id
+router.get(
+  "/:id",
+  protect,
+  getProjectById
+);
 
 //create project
 router.post(

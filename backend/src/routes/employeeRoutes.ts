@@ -1,12 +1,35 @@
 import { Router } from "express";
 
-import { createEmployee, getEmployees, getEmployeeById, updateEmployee, deleteEmployee} from "../controllers/employeeController";
+import {
+  createEmployee,
+  getEmployees,
+  getEmployeeById,
+  updateEmployee,
+  deleteEmployee,
+  getProfile,
+  updateProfile,
+} from "../controllers/employeeController";
 
 import { protect } from "../middleware/authMiddleware";
 
 import { authorizePermission } from "../middleware/permissionMiddleware";
 
 const router = Router();
+
+// get self profile
+router.get(
+  "/profile",
+  protect,
+  getProfile
+);
+
+// update self profile
+router.put(
+  "/profile",
+  protect,
+  authorizePermission("UPDATE_PROFILE"),
+  updateProfile
+);
 
 //create employee
 router.post(
@@ -57,7 +80,5 @@ router.delete(
   ),
   deleteEmployee
 );
-
-
 
 export default router;

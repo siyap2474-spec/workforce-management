@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 import Employee from "../models/Employee";
 import User from "../models/User";
@@ -471,4 +472,64 @@ export const deleteEmployee = async (
 
   }
 
+};
+
+// get logged-in employee profile
+export const getProfile = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: "Not authorized" });
+      return;
+    }
+
+    const employee = await Employee.findOne({ user: req.user._id });
+
+    if (!employee) {
+      res.status(404).json({ message: "Employee profile not found" });
+      return;
+    }
+
+    res.status(200).json(employee);
+  } catch (error) {
+    console.error("GET PROFILE ERROR:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// update logged-in employee profile
+export const updateProfile = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.user) {
+      res.status(401).json({ message: "Not authorized" });
+      return;
+    }
+
+    const { phone, skills, name } = req.body;
+
+    const employee = await Employee.findOneAndUpdate(
+      { user: req.user._id },
+      { phone, skills, name },
+      { new: true, runValidators: true }
+    );
+
+    if (!employee) {
+      res.status(404).json({ message: "Employee profile not found" });
+      return;
+    }
+
+    if (name) {
+      await User.findByIdAndUpdate(req.user._id, { name });
+    }
+
+    res.status(200).json(employee);
+  } catch (error) {
+    console.error("UPDATE PROFILE ERROR:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
 };

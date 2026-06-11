@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthRequest } from "../middleware/authMiddleware";
 import Leave from "../models/Leave";
 import Employee from "../models/Employee";
 import Allocation from "../models/Allocation";
@@ -93,6 +94,60 @@ export const getAllLeaves =
         } catch (error) {
             console.error(error);
 
+            res.status(500).json({
+                message: "Server Error",
+            });
+        }
+    };
+
+//get employee's own leaves
+export const getMyLeaves =
+    async (
+        req: AuthRequest,
+        res: Response
+    ): Promise<void> => {
+        try {
+            if (!req.user) {
+                res.status(401).json({
+                    message: "Not authorized",
+                });
+                return;
+            }
+
+            const employee =
+                await Employee.findOne({
+                    user: req.user._id,
+                });
+
+            if (!employee) {
+                res.status(404).json({
+                    message: "Employee profile not found",
+                });
+                return;
+            }
+
+            const leaves =
+                await Leave.find({
+                    employee: employee._id,
+                })
+                    .populate(
+                        "employee",
+                        "name email"
+                    )
+                    .populate(
+                        "replacementEmployee",
+                        "name email"
+                    )
+                    .sort({
+                        createdAt: -1,
+                    });
+
+            res.status(200).json(
+                leaves
+            );
+
+        } catch (error) {
+            console.error(error);
             res.status(500).json({
                 message: "Server Error",
             });

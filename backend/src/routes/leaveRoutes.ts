@@ -5,6 +5,7 @@ console.log("LEAVE ROUTE FILE LOADED");
 import {
   applyLeave,
   getAllLeaves,
+  getMyLeaves,
   approveLeave,
   rejectLeave,
   getLeaveCalendar,
@@ -42,6 +43,13 @@ router.get(
     "VIEW_LEAVES"
   ),
   getAllLeaves
+);
+
+// Employee view self leaves
+router.get(
+  "/my-leaves",
+  protect,
+  getMyLeaves
 );
 
 
