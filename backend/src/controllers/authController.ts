@@ -7,7 +7,7 @@ import mongoose from "mongoose";
 import { sendEmail } from "../utils/sendEmail";
 import { generateRefreshToken } from "../utils/generateRefreshToken";
 import jwt from "jsonwebtoken";
-
+import Employee from "../models/Employee";
 
 import Role from "../models/Role";
 
@@ -16,8 +16,10 @@ export const registerUser = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+
+  console.log("REGISTER API HIT");
   try {
-    const { name, email, password, roleId } = req.body;
+    const { name, email, password, roleId, phone, department, skills } = req.body;
 
     const existingUser = await User.findOne({ email });
 
@@ -46,7 +48,6 @@ export const registerUser = async (
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-
     const verificationToken = crypto
       .randomBytes(32)
       .toString("hex");
@@ -54,8 +55,6 @@ export const registerUser = async (
     const verificationTokenExpires = new Date(
       Date.now() + 1000 * 60 * 60 // 1 hour
     );
-
-
 
     const user = await User.create({
       name,
@@ -65,6 +64,21 @@ export const registerUser = async (
       verificationToken,
       verificationTokenExpires,
     });
+
+    if (role.name?.toLowerCase() === "employee") {
+      await Employee.create({
+        user: user._id,
+        name,
+        email,
+        phone: req.body.phone,
+        department: req.body.department,
+        skills: req.body.skills || [],
+        isOnLeave: false,
+        casualLeaveBalance: 12,
+        sickLeaveBalance: 8,
+        earnedLeaveBalance: 15,
+      });
+    }
 
     const verificationUrl =
       `http://localhost:5000/api/auth/verify-email/${verificationToken}`;
