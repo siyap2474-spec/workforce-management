@@ -167,10 +167,8 @@ export const getEmployeeDashboard =
 
 
 
-            const employee =
-                await Employee.findById(
-                    employeeId
-                );
+            // AFTER
+const employee = await Employee.findOne({ user: employeeId });
 
 
             if (!employee) {
@@ -182,18 +180,11 @@ export const getEmployeeDashboard =
                 return;
             }
 
-            const currentProjects =
-                await Allocation.find({
-
-                    employee: employeeId,
-
-                    status: "Active"
-
-                })
-                    .populate(
-                        "project",
-                        "name"
-                    );
+            // AFTER
+const currentProjects = await Allocation.find({
+  employee: employee._id,  // use the real Employee _id
+  status: "Active"
+}).populate("project", "name");
 
             const monthlyHours =
                 await Timesheet.aggregate([
