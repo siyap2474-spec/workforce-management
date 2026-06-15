@@ -19,7 +19,7 @@ export const registerUser = async (
 
   console.log("REGISTER API HIT");
   try {
-    const { name, email, password, roleId, phone, department, skills } = req.body;
+    const { name, email, password, phone, department, skills } = req.body;
 
     const existingUser = await User.findOne({ email });
 
@@ -30,18 +30,18 @@ export const registerUser = async (
       return;
     }
 
-    if (!mongoose.Types.ObjectId.isValid(roleId)) {
+    if (!phone || !department) {
       res.status(400).json({
-        message: "Invalid role ID format",
+        message: "Phone and department are required for employee registration",
       });
       return;
     }
 
-    const role = await Role.findById(roleId);
+    const employeeRole = await Role.findOne({ name: { $regex: /^employee$/i } });
 
-    if (!role) {
+    if (!employeeRole) {
       res.status(400).json({
-        message: "Invalid role",
+        message: "Employee role not configured on server",
       });
       return;
     }
@@ -60,25 +60,23 @@ export const registerUser = async (
       name,
       email,
       password: hashedPassword,
-      role: roleId,
+      role: employeeRole._id,
       verificationToken,
       verificationTokenExpires,
     });
 
-    if (role.name?.toLowerCase() === "employee") {
-      await Employee.create({
-        user: user._id,
-        name,
-        email,
-        phone: req.body.phone,
-        department: req.body.department,
-        skills: req.body.skills || [],
-        isOnLeave: false,
-        casualLeaveBalance: 12,
-        sickLeaveBalance: 8,
-        earnedLeaveBalance: 15,
-      });
-    }
+    await Employee.create({
+      user: user._id,
+      name,
+      email,
+      phone,
+      department,
+      skills: skills || [],
+      isOnLeave: false,
+      casualLeaveBalance: 12,
+      sickLeaveBalance: 8,
+      earnedLeaveBalance: 15,
+    });
 
     const verificationUrl =
       `http://localhost:5173/verify-email/${verificationToken}`;
@@ -303,6 +301,7 @@ export const resetPassword = async (
     );
 
     user.password = hashedPassword;
+    user.isVerified = true;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 

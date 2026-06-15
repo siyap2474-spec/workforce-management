@@ -3,6 +3,13 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { Users, Search, Plus, Edit2, Trash2, Mail, Phone, Briefcase, ToggleLeft, ToggleRight, X, Save, AlertCircle } from "lucide-react";
 import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee, clearEmployeeError } from "../../store/slices/employeeSlice";
 import type { IEmployee } from "../../store/slices/employeeSlice";
+import api from "../../utils/api";
+
+interface Role {
+  _id: string;
+  name: string;
+  description?: string;
+}
 
 const EmployeeManagement: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -20,11 +27,39 @@ const EmployeeManagement: React.FC = () => {
   // Form states (Add)
   const [addName, setAddName] = useState("");
   const [addEmail, setAddEmail] = useState("");
-  const [addPassword, setAddPassword] = useState("");
   const [addPhone, setAddPhone] = useState("");
   const [addDepartment, setAddDepartment] = useState("");
   const [addSkills, setAddSkills] = useState<string[]>([]);
   const [addSkillInput, setAddSkillInput] = useState("");
+
+  // Roles state & selection
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [addRoleId, setAddRoleId] = useState("");
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await api.get("/auth/roles");
+        setRoles(response.data);
+        if (response.data.length > 0) {
+          const empRole = response.data.find(
+            (r: Role) => r.name.toLowerCase() === "employee"
+          );
+          setAddRoleId(empRole ? empRole._id : response.data[0]._id);
+        }
+      } catch (err) {
+        console.error("Failed to load roles:", err);
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  const getSelectedRoleName = () => {
+    const selected = roles.find((r) => r._id === addRoleId);
+    return selected ? selected.name.toLowerCase() : "employee";
+  };
+
+  const isEmployeeSelected = getSelectedRoleName() === "employee";
 
   // Form states (Edit)
   const [editName, setEditName] = useState("");
@@ -72,26 +107,28 @@ const EmployeeManagement: React.FC = () => {
     e.preventDefault();
     dispatch(clearEmployeeError());
 
-    if (!addName || !addEmail || !addPassword || !addPhone || !addDepartment) {
+    if (!addName || !addEmail || (isEmployeeSelected && (!addPhone || !addDepartment))) {
       return;
     }
 
     try {
-      await dispatch(
-        createEmployee({
-          name: addName,
-          email: addEmail,
-          password: addPassword,
-          phone: addPhone,
-          department: addDepartment,
-          skills: addSkills,
-        })
-      ).unwrap();
+      const payload: any = {
+        name: addName,
+        email: addEmail,
+        roleId: addRoleId,
+      };
+
+      if (isEmployeeSelected) {
+        payload.phone = addPhone;
+        payload.department = addDepartment;
+        payload.skills = addSkills;
+      }
+
+      await dispatch(createEmployee(payload)).unwrap();
 
       // Clear fields and close
       setAddName("");
       setAddEmail("");
-      setAddPassword("");
       setAddPhone("");
       setAddDepartment("");
       setAddSkills([]);
@@ -341,7 +378,7 @@ const EmployeeManagement: React.FC = () => {
 
               <h3 className="text-xl font-bold text-slate-100 mb-6 flex items-center gap-2.5">
                 <Plus className="w-5 h-5 text-violet-500" />
-                <span>Add New Employee</span>
+                <span>Create Account & Send Invite</span>
               </h3>
 
               <form onSubmit={handleAddSubmit} className="space-y-4">
@@ -370,75 +407,84 @@ const EmployeeManagement: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Default Password</label>
-                    <input
-                      type="password"
-                      value={addPassword}
-                      onChange={(e) => setAddPassword(e.target.value)}
+                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Portal Role</label>
+                    <select
+                      value={addRoleId}
+                      onChange={(e) => setAddRoleId(e.target.value)}
                       className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-sm"
-                      placeholder="Min. 6 chars"
                       required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Phone Number</label>
-                    <input
-                      type="text"
-                      value={addPhone}
-                      onChange={(e) => setAddPhone(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-sm"
-                      placeholder="Contact number"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Department</label>
-                    <input
-                      type="text"
-                      value={addDepartment}
-                      onChange={(e) => setAddDepartment(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-sm"
-                      placeholder="e.g. Sales, Dev, HR"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Skills tags add form */}
-                <div>
-                  <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Skills</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={addSkillInput}
-                      onChange={(e) => setAddSkillInput(e.target.value)}
-                      className="flex-1 bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2 text-slate-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-sm"
-                      placeholder="Enter skill"
-                    />
-                    <button
-                      onClick={handleAddSkillToAddForm}
-                      className="px-3 bg-slate-800 border border-slate-700 text-violet-400 rounded-xl flex items-center justify-center"
                     >
-                      <Plus className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {addSkills.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-3 p-3 bg-slate-900/30 border border-slate-900 rounded-xl">
-                      {addSkills.map((sk) => (
-                        <span key={sk} className="inline-flex items-center gap-1 px-2.5 py-1 bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-full text-xs font-semibold">
-                          {sk}
-                          <button type="button" onClick={() => handleRemoveSkillFromAddForm(sk)}>
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
+                      {roles.map((role) => (
+                        <option key={role._id} value={role._id} className="bg-slate-950">
+                          {role.name}
+                        </option>
                       ))}
-                    </div>
-                  )}
+                    </select>
+                  </div>
                 </div>
+
+                {isEmployeeSelected && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fadeIn">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Phone Number</label>
+                        <input
+                          type="text"
+                          value={addPhone}
+                          onChange={(e) => setAddPhone(e.target.value)}
+                          className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-sm"
+                          placeholder="Contact number"
+                          required={isEmployeeSelected}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Department</label>
+                        <input
+                          type="text"
+                          value={addDepartment}
+                          onChange={(e) => setAddDepartment(e.target.value)}
+                          className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-sm"
+                          placeholder="e.g. Sales, Dev, HR"
+                          required={isEmployeeSelected}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Skills tags add form */}
+                    <div className="animate-fadeIn">
+                      <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">Skills</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={addSkillInput}
+                          onChange={(e) => setAddSkillInput(e.target.value)}
+                          className="flex-1 bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-2 text-slate-200 focus:outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500 text-sm"
+                          placeholder="Enter skill"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddSkillToAddForm}
+                          className="px-3 bg-slate-800 border border-slate-700 text-violet-400 rounded-xl flex items-center justify-center"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      {addSkills.length > 0 && (
+                         <div className="flex flex-wrap gap-1.5 mt-3 p-3 bg-slate-900/30 border border-slate-900 rounded-xl">
+                          {addSkills.map((sk) => (
+                            <span key={sk} className="inline-flex items-center gap-1 px-2.5 py-1 bg-violet-600/10 text-violet-400 border border-violet-500/20 rounded-full text-xs font-semibold">
+                              {sk}
+                              <button type="button" onClick={() => handleRemoveSkillFromAddForm(sk)}>
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
 
                 <button
                   type="submit"
@@ -448,7 +494,7 @@ const EmployeeManagement: React.FC = () => {
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
-                    <span>Create Profile</span>
+                    <span>Create & Send Invite</span>
                   )}
                 </button>
               </form>

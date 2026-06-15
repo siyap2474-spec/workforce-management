@@ -184,7 +184,9 @@ const employeeSlice = createSlice({
       })
       .addCase(createEmployee.fulfilled, (state, action) => {
         state.loading = false;
-        state.employees.push(action.payload);
+        if (action.payload) {
+          state.employees.push(action.payload);
+        }
       })
       .addCase(createEmployee.rejected, (state, action) => {
         state.loading = false;

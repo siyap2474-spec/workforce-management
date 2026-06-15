@@ -5,9 +5,9 @@ import Employee from "../models/Employee";
 import User from "../models/User";
 import Role from "../models/Role";
 import bcrypt from "bcryptjs";
-
-
-
+import crypto from "crypto";
+import { sendEmail } from "../utils/sendEmail";
+import mongoose from "mongoose";
 
 //create employee
 export const createEmployee = async (
@@ -16,153 +16,137 @@ export const createEmployee = async (
 ): Promise<void> => {
 
   try {
-
     const {
       name,
       email,
-      password,
       phone,
       department,
       skills,
+      roleId,
     } = req.body;
 
-
-
-    if (
-      !name ||
-      !email ||
-      !password ||
-      !phone ||
-      !department
-    ) {
-
+    if (!name || !email) {
       res.status(400).json({
-        message:
-          "All required fields must be provided",
+        message: "Name and email are required fields",
       });
-
       return;
     }
 
+    // Determine role
+    let targetRole;
+    if (roleId) {
+      if (!mongoose.Types.ObjectId.isValid(roleId)) {
+        res.status(400).json({
+          message: "Invalid role ID format",
+        });
+        return;
+      }
+      targetRole = await Role.findById(roleId);
+      if (!targetRole) {
+        res.status(400).json({
+          message: "Role not found",
+        });
+        return;
+      }
+    } else {
+      targetRole = await Role.findOne({ name: { $regex: /^employee$/i } });
+      if (!targetRole) {
+        res.status(400).json({
+          message: "Employee role not configured on server",
+        });
+        return;
+      }
+    }
 
+    const isEmployee = targetRole.name.toLowerCase() === "employee";
 
-
-    const existingEmployee =
-      await Employee.findOne({
-        email,
-      });
-
-
-
-    const existingUser =
-      await User.findOne({
-        email,
-      });
-
-
-
-    if (
-      existingEmployee ||
-      existingUser
-    ) {
-
+    if (isEmployee && (!phone || !department)) {
       res.status(400).json({
-        message:
-          "Employee already exists",
+        message: "Phone and department are required for Employee role",
       });
-
       return;
     }
 
-    // find Employee role
-
-    const employeeRole =
-      await Role.findOne({
-        name:"Employee",
-      });
-
-    if(!employeeRole){
-
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
       res.status(400).json({
-        message:
-          "Employee role not found",
+        message: "User with this email already exists",
       });
-
       return;
-
     }
 
-    // hash password
+    if (isEmployee) {
+      const existingEmployee = await Employee.findOne({ email });
+      if (existingEmployee) {
+        res.status(400).json({
+          message: "Employee with this email already exists",
+        });
+        return;
+      }
+    }
 
-    const hashedPassword =
-      await bcrypt.hash(
-        password,
-        10
-      );
+    // Generate random password and reset password token for activation invite
+    const tempPassword = crypto.randomBytes(16).toString("hex");
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
-    // create user account
+    const resetPasswordToken = crypto.randomBytes(32).toString("hex");
+    const resetPasswordExpires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours
 
-    const user =
-      await User.create({
+    // create user account (not verified, needs to set password first)
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: targetRole._id,
+      department: department || "",
+      skills: skills || [],
+      isVerified: false,
+      resetPasswordToken,
+      resetPasswordExpires,
+    });
 
+    // create employee profile if role is Employee
+    let employee = null;
+    if (isEmployee) {
+      employee = await Employee.create({
         name,
-
         email,
-
-        password:
-          hashedPassword,
-
-        role:
-          employeeRole._id,
-
-        department,
-
-        isVerified:true,
-
-      });
-
-    // create employee profile
-
-    const employee =
-      await Employee.create({
-
-        name,
-
-        email,
-
         phone,
-
         department,
-
-        skills,
-
-        user:
-          user._id,
-
+        skills: skills || [],
+        user: user._id,
+        isOnLeave: false,
+        casualLeaveBalance: 12,
+        sickLeaveBalance: 8,
+        earnedLeaveBalance: 15,
       });
+    }
+
+    // Send the "Verify & Set Password" invitation email
+    const inviteUrl = `http://localhost:5173/reset-password/${resetPasswordToken}`;
+    await sendEmail(
+      user.email,
+      "Welcome to Workforce Management - Set Your Password",
+      `
+      <h2>Welcome to Workforce Management, ${name}!</h2>
+      <p>An administrator has created an account for you with the role of <strong>${targetRole.name}</strong>.</p>
+      <p>Please click the link below to set your password and activate your account:</p>
+      <a href="${inviteUrl}" style="background-color: #7c3aed; color: white; padding: 10px 20px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; margin-top: 10px;">Set Password & Activate Account</a>
+      <p style="margin-top: 20px; color: #6b7280; font-size: 12px;">This link will expire in 24 hours.</p>
+      `
+    );
 
     res.status(201).json({
-
-      message:
-        "Employee created successfully",
-
+      message: `${targetRole.name} created successfully. An invitation email has been sent.`,
       employee,
-
     });
 
-  } catch(error){
-
+  } catch (error) {
     console.error(error);
-
     res.status(500).json({
-
-      message:
-        "Server Error",
-
+      message: "Server Error",
     });
-
   }
-
 };
 
 

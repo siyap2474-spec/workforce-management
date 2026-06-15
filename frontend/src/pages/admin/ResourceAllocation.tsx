@@ -8,7 +8,7 @@ import { Calendar, Search, Plus, Edit2, Ban, X, History, Percent, CheckCircle, S
 
 const ResourceAllocation: React.FC = () => {
   const dispatch = useAppDispatch();
-  
+
   // Select states from slice
   const { allocations, history, loading, error } = useAppSelector((state) => state.allocations);
   const { employees } = useAppSelector((state) => state.employees);
@@ -40,7 +40,7 @@ const ResourceAllocation: React.FC = () => {
   useEffect(() => {
     dispatch(fetchAllocations(undefined));
     dispatch(fetchEmployees(undefined));
-    dispatch(fetchProjects());
+    dispatch(fetchProjects(undefined));
   }, [dispatch]);
 
   // Set default dropdown selections when modals open
@@ -286,15 +286,14 @@ const ResourceAllocation: React.FC = () => {
 
                       {/* Workload Percentage */}
                       <td className="p-4 text-center">
-                        <span className={`inline-flex items-center justify-center font-bold px-3 py-1 rounded-xl text-xs ${
-                          al.status !== "Active"
+                        <span className={`inline-flex items-center justify-center font-bold px-3 py-1 rounded-xl text-xs ${al.status !== "Active"
                             ? "bg-slate-900 text-slate-500"
                             : al.allocationPercentage === 100
-                            ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                            : al.allocationPercentage >= 50
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        }`}>
+                              ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                              : al.allocationPercentage >= 50
+                                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          }`}>
                           {al.allocationPercentage}%
                         </span>
                       </td>
@@ -311,13 +310,12 @@ const ResourceAllocation: React.FC = () => {
 
                       {/* Allocation Status */}
                       <td className="p-4">
-                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${
-                          al.status === "Cancelled"
+                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider ${al.status === "Cancelled"
                             ? "text-rose-400"
                             : al.status === "Completed"
-                            ? "text-slate-500"
-                            : "text-emerald-400"
-                        }`}>
+                              ? "text-slate-500"
+                              : "text-emerald-400"
+                          }`}>
                           <span className={`w-1.5 h-1.5 rounded-full ${al.status === "Cancelled" ? "bg-rose-400" : al.status === "Completed" ? "bg-slate-500" : "bg-emerald-400"}`}></span>
                           {al.status}
                         </span>
@@ -333,7 +331,7 @@ const ResourceAllocation: React.FC = () => {
                           >
                             <History className="w-3.5 h-3.5" />
                           </button>
-                          
+
                           {al.status === "Active" && (
                             <>
                               <button
@@ -543,13 +541,12 @@ const ResourceAllocation: React.FC = () => {
                     <div key={hist._id} className="p-4 bg-slate-900/40 border border-slate-850 rounded-2xl text-sm relative">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-bold text-slate-200">{hist.project?.name || "Deleted Project"}</h4>
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                          hist.status === "Cancelled"
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${hist.status === "Cancelled"
                             ? "bg-rose-500/10 text-rose-400"
                             : hist.status === "Completed"
-                            ? "bg-slate-900 text-slate-500"
-                            : "bg-emerald-500/10 text-emerald-400"
-                        }`}>
+                              ? "bg-slate-900 text-slate-500"
+                              : "bg-emerald-500/10 text-emerald-400"
+                          }`}>
                           {hist.status}
                         </span>
                       </div>
