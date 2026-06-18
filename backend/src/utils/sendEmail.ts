@@ -12,7 +12,7 @@ export const sendEmail = async (
   console.log("SENDING TO:", to);
 
   const result = await resend.emails.send({
-   from: "siyap2474@gmail.com",
+   from: "onboarding@resend.dev",
     to,
     subject,
     html,
