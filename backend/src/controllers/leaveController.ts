@@ -3,6 +3,7 @@ import { AuthRequest } from "../middleware/authMiddleware";
 import Leave from "../models/Leave";
 import Employee from "../models/Employee";
 import Allocation from "../models/Allocation";
+import mongoose from "mongoose";
 
 //Apply Leave
 export const applyLeave =
@@ -76,6 +77,37 @@ export const getAllLeaves =
         res: Response
     ): Promise<void> => {
         try {
+            const page = req.query.page ? parseInt(req.query.page as string, 10) : null;
+            const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : null;
+            const paginationFormat = req.query.paginationFormat as string;
+
+            if (page && limit && page > 0 && limit > 0) {
+                const skip = (page - 1) * limit;
+                const total = await Leave.countDocuments();
+                const leaves = await Leave.find()
+                    .populate("employee", "name email")
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit);
+
+                res.setHeader("X-Total-Count", total.toString());
+                res.setHeader("X-Total-Pages", Math.ceil(total / limit).toString());
+                res.setHeader("X-Current-Page", page.toString());
+                res.setHeader("X-Limit", limit.toString());
+
+                if (paginationFormat === "json") {
+                    res.status(200).json({
+                        total,
+                        pages: Math.ceil(total / limit),
+                        currentPage: page,
+                        limit,
+                        data: leaves,
+                    });
+                    return;
+                }
+                res.status(200).json(leaves);
+                return;
+            }
 
             const leaves =
                 await Leave.find()
@@ -229,6 +261,37 @@ export const approveLeave =
                 });
 
                 return;
+            }
+
+            if (replacementEmployeeId) {
+                if (!mongoose.Types.ObjectId.isValid(replacementEmployeeId)) {
+                    res.status(400).json({
+                        message: "Invalid replacement employee ID format",
+                    });
+                    return;
+                }
+
+                if (replacementEmployeeId === leave.employee.toString()) {
+                    res.status(400).json({
+                        message: "An employee cannot be their own replacement",
+                    });
+                    return;
+                }
+
+                const replacementEmployee = await Employee.findById(replacementEmployeeId);
+                if (!replacementEmployee) {
+                    res.status(404).json({
+                        message: "Replacement employee not found",
+                    });
+                    return;
+                }
+
+                if (replacementEmployee.isOnLeave) {
+                    res.status(400).json({
+                        message: "Replacement employee is currently on leave",
+                    });
+                    return;
+                }
             }
 
             if (

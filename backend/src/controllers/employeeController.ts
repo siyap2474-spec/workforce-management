@@ -123,7 +123,7 @@ export const createEmployee = async (
     }
 
     // Send the "Verify & Set Password" invitation email
-    const inviteUrl = `http://localhost:5173/reset-password/${resetPasswordToken}`;
+    const inviteUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password/${resetPasswordToken}`;
     await sendEmail(
       user.email,
       "Welcome to Workforce Management - Set Your Password",
@@ -225,29 +225,47 @@ export const getEmployees = async (
 
 
 
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : null;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : null;
+    const paginationFormat = req.query.paginationFormat as string;
+
+    if (page && limit && page > 0 && limit > 0) {
+      const skip = (page - 1) * limit;
+      const total = await Employee.countDocuments(query);
+      const employees = await Employee.find(query).skip(skip).limit(limit);
+
+      res.setHeader("X-Total-Count", total.toString());
+      res.setHeader("X-Total-Pages", Math.ceil(total / limit).toString());
+      res.setHeader("X-Current-Page", page.toString());
+      res.setHeader("X-Limit", limit.toString());
+
+      if (paginationFormat === "json") {
+        res.status(200).json({
+          total,
+          pages: Math.ceil(total / limit),
+          currentPage: page,
+          limit,
+          data: employees,
+        });
+        return;
+      }
+      res.status(200).json(employees);
+      return;
+    }
+
     const employees =
       await Employee.find(query);
 
-
-
     res.status(200).json(employees);
-
-
 
   } catch(error){
 
-
     console.error(error);
 
-
     res.status(500).json({
-
       message:
         "Server Error",
-
     });
-
-
   }
 
 };

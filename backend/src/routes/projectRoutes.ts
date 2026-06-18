@@ -12,6 +12,7 @@ import {
 import { protect } from "../middleware/authMiddleware";
 
 import { authorizePermission } from "../middleware/permissionMiddleware";
+import { validateBody } from "../middleware/validate";
 
 const router = Router();
 
@@ -36,6 +37,22 @@ router.post(
   authorizePermission(
     "CREATE_PROJECT"
   ),
+  validateBody([
+    { field: "name", required: true, type: "string" },
+    { field: "description", required: true, type: "string" },
+    { field: "startDate", required: true, type: "date" },
+    { 
+      field: "endDate", 
+      required: true, 
+      type: "date",
+      custom: (val, req) => {
+        if (req.body.startDate && new Date(val) <= new Date(req.body.startDate)) {
+          return "End date must be after start date";
+        }
+        return null;
+      }
+    },
+  ]),
   createProject
 );
 

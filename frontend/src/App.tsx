@@ -27,6 +27,11 @@ import Reports from "./pages/admin/Reports";
 // Protected Route Guard
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Global loading & error handling components
+import ErrorBoundary from "./components/ErrorBoundary";
+import GlobalLoader from "./components/GlobalLoader";
+import ToastContainer from "./components/ToastContainer";
+
 const App: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
 
@@ -47,126 +52,130 @@ const App: React.FC = () => {
   };
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Auth Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+    <ErrorBoundary>
+      <GlobalLoader />
+      <ToastContainer />
+      <BrowserRouter>
+        <Routes>
+          {/* Public Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
-        {/* Protected Dashboard Routes */}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["Admin"]}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/employees"
-          element={
-            <ProtectedRoute allowedRoles={["Admin"]}>
-              <EmployeeManagement />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/projects"
-          element={
-            <ProtectedRoute allowedRoles={["Admin"]}>
-              <ProjectManagement />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/allocations"
-          element={
-            <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
-              <ResourceAllocation />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/manager/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["Manager", "Project Manager"]}>
-              <ManagerDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/employee/dashboard"
-          element={
-            <ProtectedRoute allowedRoles={["Employee"]}>
-              <EmployeeDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/employee/profile"
-          element={
-            <ProtectedRoute allowedRoles={["Employee"]}>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/employee/leaves"
-          element={
-            <ProtectedRoute allowedRoles={["Employee"]}>
-              <Leaves />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/leaves"
-          element={
-            <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
-              <LeaveManagement />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/employee/timesheets"
-          element={
-            <ProtectedRoute allowedRoles={["Employee"]}>
-              <Timesheets />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/manager/timesheets"
-          element={
-            <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
-              <TimesheetReview />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/availability"
-          element={
-            <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
-              <Availability />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/reports"
-          element={
-            <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
-              <Reports />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected Dashboard Routes */}
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["Admin"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/employees"
+            element={
+              <ProtectedRoute allowedRoles={["Admin"]}>
+                <EmployeeManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/projects"
+            element={
+              <ProtectedRoute allowedRoles={["Admin"]}>
+                <ProjectManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/allocations"
+            element={
+              <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
+                <ResourceAllocation />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["Manager", "Project Manager"]}>
+                <ManagerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["Employee"]}>
+                <EmployeeDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/profile"
+            element={
+              <ProtectedRoute allowedRoles={["Employee"]}>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/leaves"
+            element={
+              <ProtectedRoute allowedRoles={["Employee"]}>
+                <Leaves />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/leaves"
+            element={
+              <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
+                <LeaveManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employee/timesheets"
+            element={
+              <ProtectedRoute allowedRoles={["Employee"]}>
+                <Timesheets />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/manager/timesheets"
+            element={
+              <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
+                <TimesheetReview />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/availability"
+            element={
+              <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
+                <Availability />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute allowedRoles={["Admin", "Manager", "Project Manager"]}>
+                <Reports />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Global Fallbacks */}
-        <Route path="/" element={<RootRedirect />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Global Fallbacks */}
+          <Route path="/" element={<RootRedirect />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 };
 

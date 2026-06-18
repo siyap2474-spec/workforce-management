@@ -19,6 +19,7 @@ from "../middleware/authMiddleware";
 
 import { authorizePermission }
 from "../middleware/permissionMiddleware";
+import { validateBody } from "../middleware/validate";
 
 
 const router = express.Router();
@@ -31,6 +32,31 @@ router.post(
   authorizePermission(
     "APPLY_LEAVE"
   ),
+  validateBody([
+    { field: "employeeId", required: true, type: "string" },
+    { 
+      field: "leaveType", 
+      required: true, 
+      custom: (val) => {
+        if (!["Casual", "Sick", "Earned"].includes(val)) {
+          return "Leave type must be one of: Casual, Sick, Earned";
+        }
+        return null;
+      } 
+    },
+    { field: "startDate", required: true, type: "date" },
+    { 
+      field: "endDate", 
+      required: true, 
+      type: "date",
+      custom: (val, req) => {
+        if (req.body.startDate && new Date(val) <= new Date(req.body.startDate)) {
+          return "End date must be after start date";
+        }
+        return null;
+      }
+    },
+  ]),
   applyLeave
 );
 

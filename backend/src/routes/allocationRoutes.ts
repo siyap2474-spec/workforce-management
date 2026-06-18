@@ -14,6 +14,7 @@ from "../middleware/authMiddleware";
 
 import { authorizePermission }
 from "../middleware/permissionMiddleware";
+import { validateBody } from "../middleware/validate";
 
 
 const router = Router();
@@ -36,6 +37,23 @@ router.post(
   authorizePermission(
     "CREATE_ALLOCATION"
   ),
+  validateBody([
+    { field: "employeeId", required: true, type: "string" },
+    { field: "projectId", required: true, type: "string" },
+    { field: "allocationPercentage", required: true, type: "percentage" },
+    { field: "startDate", required: true, type: "date" },
+    { 
+      field: "endDate", 
+      required: true, 
+      type: "date",
+      custom: (val, req) => {
+        if (req.body.startDate && new Date(val) <= new Date(req.body.startDate)) {
+          return "End date must be after start date";
+        }
+        return null;
+      }
+    },
+  ]),
   allocateEmployee
 );
 
@@ -47,6 +65,9 @@ router.put(
   authorizePermission(
     "UPDATE_ALLOCATION"
   ),
+  validateBody([
+    { field: "allocationPercentage", required: true, type: "percentage" }
+  ]),
   updateAllocation
 );
 

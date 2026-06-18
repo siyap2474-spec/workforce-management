@@ -13,6 +13,7 @@ import {
 import { protect } from "../middleware/authMiddleware";
 
 import { authorizePermission } from "../middleware/permissionMiddleware";
+import { validateBody } from "../middleware/validate";
 
 const router = Router();
 
@@ -28,6 +29,10 @@ router.put(
   "/profile",
   protect,
   authorizePermission("UPDATE_PROFILE"),
+  validateBody([
+    { field: "name", required: false, type: "string" },
+    { field: "phone", required: false, type: "string" },
+  ]),
   updateProfile
 );
 
@@ -38,6 +43,10 @@ router.post(
   authorizePermission(
     "CREATE_EMPLOYEE"
   ),
+  validateBody([
+    { field: "name", required: true, type: "string" },
+    { field: "email", required: true, type: "email" },
+  ]),
   createEmployee
 );
 

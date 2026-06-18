@@ -8,6 +8,7 @@ import timesheetReducer from "./slices/timesheetSlice";
 import availabilityReducer from "./slices/availabilitySlice";
 import dashboardReducer from "./slices/dashboardSlice";
 import reportReducer from "./slices/reportSlice";
+import uiReducer from "./slices/uiSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     availability: availabilityReducer,
     dashboard: dashboardReducer,
     reports: reportReducer,
+    ui: uiReducer,
   },
 });
 

@@ -79,7 +79,7 @@ export const registerUser = async (
     });
 
     const verificationUrl =
-      `http://localhost:5173/verify-email/${verificationToken}`;
+      `${process.env.FRONTEND_URL || "http://localhost:5173"}/verify-email/${verificationToken}`;
 
     await sendEmail(
       user.email,
@@ -244,7 +244,7 @@ export const forgotPassword = async (
     await user.save();
 
     const resetUrl =
-      `http://localhost:5173/reset-password/${resetPasswordToken}`;
+      `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password/${resetPasswordToken}`;
 
     await sendEmail(
       user.email,
