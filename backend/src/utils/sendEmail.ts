@@ -7,10 +7,16 @@ export const sendEmail = async (
   subject: string,
   html: string
 ) => {
-  await resend.emails.send({
+
+  console.log("EMAIL FUNCTION HIT");
+  console.log("SENDING TO:", to);
+
+  const result = await resend.emails.send({
     from: "onboarding@resend.dev",
     to,
     subject,
     html,
   });
+
+  console.log("RESEND RESULT:", result);
 };
